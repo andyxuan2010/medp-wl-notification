@@ -38,7 +38,9 @@ else:
 TARGETS = {
     "udem_medp_pdf": {
         "url": "https://admission.umontreal.ca/fileadmin/fichiers/documents/liste_attente/LA.pdf",
-        "keyword": "1-450-4-0 Année préparatoire au doctorat en médecine Collégiens",
+        "keyword": "1-450-4-0",
+        "keyword2": "Année préparatoire au doctorat en médecine",
+        "keyword3": "Collégiens",
         "description": "UdeM Med-P (PDF)",
         "format": "pdf",
         "email_group": "admins"
@@ -70,19 +72,48 @@ TARGETS = {
 logging.basicConfig(filename="monitoring.log", level=logging.DEBUG if DEBUG_MODE else logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
-def download_pdf_and_search(url, keyword, filename):
+def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None):
     if DEBUG_MODE:
         logging.debug(f"Downloading PDF from {url} to {filename}")
     response = requests.get(url)
     with open(filename, "wb") as f:
         f.write(response.content)
     doc = fitz.open(filename)
+    text_lines = []
     for page in doc:
-        for line in page.get_text().split("\n"):
-            if DEBUG_MODE:
-                logging.debug(f"PDF line: {line}")
-            if keyword in line:
-                return line
+        page_lines = [line.strip() for line in page.get_text().split("\n") if line.strip()]
+        text_lines.extend(page_lines)
+        if DEBUG_MODE:
+            logging.debug(f"Extracted {len(page_lines)} lines from page")
+
+    # Smart search by segments
+    step1 = [i for i, line in enumerate(text_lines) if keyword in line]
+    for idx in step1:
+        try:
+            if keyword2 in text_lines[idx + 1] and keyword3 in text_lines[idx + 2]:
+                final_value = text_lines[idx + 3].strip()
+                if DEBUG_MODE:
+                    logging.debug(f"Smart PDF match found: {text_lines[idx]} | {text_lines[idx+1]} | {text_lines[idx+2]} | Value: {final_value}")
+                return final_value
+        except IndexError:
+            continue
+
+    # fallback to simple search (in case keyword not from UdeM case)
+    full_text = " ".join(text_lines)
+    if keyword in full_text:
+        if DEBUG_MODE:
+            logging.debug("Keyword matched using fallback full text search")
+        return keyword
+
+    return None
+
+    # fallback to simple search (in case keyword not from UdeM case)
+    full_text = " ".join(text_lines)
+    if keyword in full_text:
+        if DEBUG_MODE:
+            logging.debug("Keyword matched using fallback full text search")
+        return keyword
+
     return None
 
 def search_html(url, keyword):
