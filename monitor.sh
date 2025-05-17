@@ -2,7 +2,7 @@
 
 # === Configuration ===
 REPO_URL="https://github.com/andyxuan2010/medp-wl-notification.git"
-WORK_DIR="$HOME/shared/scripts/"
+WORK_DIR="$HOME/shared/scripts/medp-wl-notification"
 PYTHON_BIN=$(which python3)
 CRON_TIME="0 8 * * *"
 
@@ -11,12 +11,11 @@ mkdir -p "$WORK_DIR"
 cd "$WORK_DIR" || exit 1
 
 echo "⬇️ Cloning GitHub repository..."
-if [ -d "medp-wl-notification" ]; then
+if [ -d ".github" ]; then
     echo "✅ Repository already exists. Running git pull to update."
-    cd medp-wl-notification && git pull
+    git pull
 else
-    git clone "$REPO_URL"
-    cd medp-wl-notification || exit 1
+    git clone "$REPO_URL" .
 fi
 
 echo "🐍 Checking/Creating Python virtual environment..."
@@ -48,10 +47,10 @@ echo "🚀 Running monitor.py once for testing..."
 python monitor.py
 
 echo "⏰ Adding cron job (if not already added)..."
-CRON_JOB="$CRON_TIME cd $WORK_DIR/medp-wl-notification && source venv/bin/activate && python monitor.py >> monitor_cron.log 2>&1"
+CRON_JOB="$CRON_TIME cd $WORK_DIR && source venv/bin/activate && python monitor.py >> monitor_cron.log 2>&1"
 
 # Check if cron job already exists
-(crontab -l 2>/dev/null | grep -F "$WORK_DIR/medp-wl-notification/monitor.py") >/dev/null
+(crontab -l 2>/dev/null | grep -F "$WORK_DIR/monitor.py") >/dev/null
 if [ $? -ne 0 ]; then
     (crontab -l 2>/dev/null; echo "$CRON_JOB") | crontab -
     echo "✅ Cron job added: $CRON_JOB"
