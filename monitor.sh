@@ -15,7 +15,11 @@ if [ -d ".github" ]; then
     echo "✅ Repository already exists. Running git pull to update."
     git pull
 else
-    git clone "$REPO_URL" .
+    #git clone "$REPO_URL" .
+    git init
+    git remote add origin $REPO_URL
+    git fetch
+    git checkout -t origin/main
 fi
 
 echo "🐍 Checking/Creating Python virtual environment..."
