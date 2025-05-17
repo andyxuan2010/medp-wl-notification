@@ -72,50 +72,6 @@ TARGETS = {
 logging.basicConfig(filename="monitoring.log", level=logging.DEBUG if DEBUG_MODE else logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
-def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None):
-    if DEBUG_MODE:
-        logging.debug(f"Downloading PDF from {url} to {filename}")
-    response = requests.get(url)
-    with open(filename, "wb") as f:
-        f.write(response.content)
-    doc = fitz.open(filename)
-    text_lines = []
-    for page in doc:
-        page_lines = [line.strip() for line in page.get_text().split("\n") if line.strip()]
-        text_lines.extend(page_lines)
-        if DEBUG_MODE:
-            logging.debug(f"Extracted {len(page_lines)} lines from page")
-
-    # Smart search by segments
-    step1 = [i for i, line in enumerate(text_lines) if keyword in line]
-    for idx in step1:
-        try:
-            if keyword2 in text_lines[idx + 1] and keyword3 in text_lines[idx + 2]:
-                final_value = text_lines[idx + 3].strip()
-                if DEBUG_MODE:
-                    logging.debug(f"Smart PDF match found: {text_lines[idx]} | {text_lines[idx+1]} | {text_lines[idx+2]} | Value: {final_value}")
-                return final_value
-        except IndexError:
-            continue
-
-    # fallback to simple search (in case keyword not from UdeM case)
-    full_text = " ".join(text_lines)
-    if keyword in full_text:
-        if DEBUG_MODE:
-            logging.debug("Keyword matched using fallback full text search")
-        return keyword
-
-    return None
-
-    # fallback to simple search (in case keyword not from UdeM case)
-    full_text = " ".join(text_lines)
-    if keyword in full_text:
-        if DEBUG_MODE:
-            logging.debug("Keyword matched using fallback full text search")
-        return keyword
-
-    return None
-
 def search_html(url, keyword):
     if DEBUG_MODE:
         logging.debug(f"Searching HTML for keyword '{keyword}' at {url}")
@@ -135,6 +91,41 @@ def search_mcgill_waitlist_row(url, keyword):
                     logging.debug(f"Table row: {row.get_text(strip=True)}")
                 if keyword.lower() in row.get_text().lower():
                     return row.get_text(strip=True)
+    return None
+
+def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None):
+    if DEBUG_MODE:
+        logging.debug(f"Downloading PDF from {url} to {filename}")
+    response = requests.get(url)
+    with open(filename, "wb") as f:
+        f.write(response.content)
+    doc = fitz.open(filename)
+    text_lines = []
+    for page in doc:
+        page_lines = [line.strip() for line in page.get_text().split("\n") if line.strip()]
+        text_lines.extend(page_lines)
+        if DEBUG_MODE:
+            logging.debug(f"Extracted {len(page_lines)} lines from page")
+
+    # UdeM-specific smart sequential match
+    step1 = [i for i, line in enumerate(text_lines) if keyword in line]
+    for idx in step1:
+        try:
+            if keyword2 in text_lines[idx + 1] and keyword3 in text_lines[idx + 2]:
+                final_value = text_lines[idx + 3].strip()
+                if DEBUG_MODE:
+                    logging.debug(f"Smart PDF match found: {text_lines[idx]} | {text_lines[idx+1]} | {text_lines[idx+2]} | Value: {final_value}")
+                return final_value
+        except IndexError:
+            continue
+
+    # fallback search
+    full_text = " ".join(text_lines)
+    if keyword in full_text:
+        if DEBUG_MODE:
+            logging.debug("Fallback keyword match succeeded in PDF")
+        return keyword
+
     return None
 
 def send_email_html(subject, results, recipients):
@@ -174,6 +165,8 @@ def run_monitor():
         try:
             url = config["url"]
             keyword = config["keyword"]
+            keyword2 = config.get("keyword2")
+            keyword3 = config.get("keyword3")
             description = config["description"]
             fmt = config["format"]
             group = config.get("email_group", "admins")
@@ -183,7 +176,7 @@ def run_monitor():
 
             result = None
             if fmt == "pdf":
-                result = download_pdf_and_search(url, keyword, f"{key}.pdf")
+                result = download_pdf_and_search(url, keyword, f"{key}.pdf", keyword2, keyword3)
             elif fmt == "html":
                 result = search_html(url, keyword)
             elif fmt == "html_table_row":
@@ -205,6 +198,7 @@ def run_monitor():
                     results=[{"description": description, "url": url, "matched": f"ERROR: {e}"}],
                     recipients=EMAIL_GROUPS["admins"]
                 )
+
     for group, results in grouped_results.items():
         if group in EMAIL_GROUPS:
             if DEBUG_MODE:
@@ -217,7 +211,6 @@ def run_monitor():
         else:
             if DEBUG_MODE:
                 logging.debug(f"Group '{group}' not found in EMAIL_GROUPS, skipping email.")
-
 
 if __name__ == "__main__":
     run_monitor()
