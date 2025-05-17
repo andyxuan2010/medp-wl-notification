@@ -174,14 +174,19 @@ def run_monitor():
                     results=[{"description": description, "url": url, "matched": f"ERROR: {e}"}],
                     recipients=EMAIL_GROUPS["admins"]
                 )
-
     for group, results in grouped_results.items():
         if group in EMAIL_GROUPS:
+            if DEBUG_MODE:
+                logging.debug(f"Sending report email for group '{group}' with {len(results)} matched result(s).")
             send_email_html(
                 subject=f"Monitoring Report – {group}",
                 results=results,
                 recipients=EMAIL_GROUPS[group]
             )
+        else:
+            if DEBUG_MODE:
+                logging.debug(f"Group '{group}' not found in EMAIL_GROUPS, skipping email.")
+
 
 if __name__ == "__main__":
     run_monitor()
