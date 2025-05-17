@@ -63,7 +63,7 @@ TARGETS = {
     },
     "usherbrooke_progress_html": {
         "url": "https://www.usherbrooke.ca/etudes-medecine/programmes-detudes/doctorat-en-medecine/admission/suivi-des-admissions",
-        "keyword": "Contingent québécois, catégorie collégiale",
+        "keyword": "Contingent québécois, catégorie&nbsp;collégiale",
         "description": "Sherbrooke Med Admission Progress",
         "format": "html_table_row",
         "email_group": "students"
