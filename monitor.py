@@ -4,6 +4,7 @@ import smtplib
 import requests
 import logging
 import unicodedata
+import re
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -29,6 +30,10 @@ def normalize_text(text):
     # Normalize unicode (accents, etc.) and lowercase for comparison
     return unicodedata.normalize("NFKD", text).encode("ASCII", "ignore").decode().lower().strip()
 
+def format_positions_text(text):
+    # Find all occurrences of: Capitalized word(s) + ':' + number ending in 'e'
+    parts = re.findall(r'[A-ZÉÈÎÔÂÀÇa-zéèêçîôâàû]+ ?:\s*\d+e', text)
+    return '\r\n'.join(parts)
 
 # Load recipient groups from external file
 RECIPIENTS_FILE = ".recipients"
@@ -101,7 +106,9 @@ def search_waitlist_row(url, keyword):
 
             if normalized_keyword in cell_text:
                 positions_text = cells[1].get_text()
-                return positions_text.strip()
+                formatted_text = format_positions_text(positions_text)
+                return formatted_text.strip()
+                
     return None
 
 def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None):
