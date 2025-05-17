@@ -19,6 +19,7 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 SMTP_SERVER = os.getenv("SMTP_SERVER", "relais.videotron.ca")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "25"))
 USE_AUTH = os.getenv("USE_AUTH", "False").lower() == "true"
+DEBUG_MODE = os.getenv("DEBUG", "False").lower() == "true"
 
 # Load recipient groups from external file
 RECIPIENTS_FILE = ".recipients"
@@ -62,36 +63,48 @@ TARGETS = {
 }
 
 # Logging setup
-logging.basicConfig(filename="monitoring.log", level=logging.INFO,
+logging.basicConfig(filename="monitoring.log", level=logging.DEBUG if DEBUG_MODE else logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
 def download_pdf_and_search(url, keyword, filename):
+    if DEBUG_MODE:
+        logging.debug(f"Downloading PDF from {url} to {filename}")
     response = requests.get(url)
     with open(filename, "wb") as f:
         f.write(response.content)
     doc = fitz.open(filename)
     for page in doc:
         for line in page.get_text().split("\n"):
+            if DEBUG_MODE:
+                logging.debug(f"PDF line: {line}")
             if keyword in line:
                 return line
     return None
 
 def search_html(url, keyword):
+    if DEBUG_MODE:
+        logging.debug(f"Searching HTML for keyword '{keyword}' at {url}")
     response = requests.get(url)
     return f"Keyword found in HTML: '{keyword}'" if keyword in response.text else None
 
 def search_mcgill_waitlist_row(url, keyword):
+    if DEBUG_MODE:
+        logging.debug(f"Parsing McGill HTML table at {url} for keyword '{keyword}'")
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
     tables = soup.find_all("table")
     for table in tables:
         if "waiting list" in table.get_text().lower():
             for row in table.find_all("tr"):
+                if DEBUG_MODE:
+                    logging.debug(f"Table row: {row.get_text(strip=True)}")
                 if keyword.lower() in row.get_text().lower():
                     return row.get_text(strip=True)
     return None
 
 def send_email_html(subject, results, recipients):
+    if DEBUG_MODE:
+        logging.debug(f"Sending email to: {recipients} with subject: {subject}")
     msg = MIMEMultipart("alternative")
     msg["From"] = EMAIL_SENDER
     msg["To"] = ", ".join(recipients)
@@ -118,6 +131,8 @@ def send_email_html(subject, results, recipients):
         server.sendmail(EMAIL_SENDER, recipients, msg.as_string())
 
 def run_monitor():
+    if DEBUG_MODE:
+        logging.debug("Starting monitor run...")
     grouped_results = {}
 
     for key, config in TARGETS.items():
@@ -127,6 +142,9 @@ def run_monitor():
             description = config["description"]
             fmt = config["format"]
             group = config.get("email_group", "admins")
+
+            if DEBUG_MODE:
+                logging.debug(f"Checking target: {description} ({fmt})")
 
             result = None
             if fmt == "pdf":
