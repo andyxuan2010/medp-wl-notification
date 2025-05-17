@@ -77,8 +77,6 @@ def search_waitlist_row(url, keyword):
     if DEBUG_MODE:
         logging.debug(f"Parsing HTML table at {url} for keyword '{keyword}'")
     response = requests.get(url)
-    if DEBUG_MODE:
-        logging.debug(f"response: {response}")    
     soup = BeautifulSoup(response.text, "html.parser")
     tables = soup.find_all("table")
     # if DEBUG_MODE:
@@ -142,9 +140,9 @@ def send_email_html(subject, results, recipients):
     today = datetime.now().strftime("%Y-%m-%d")
     html = """
     <html><body>
-    <p>Monitoring report:</p>
+    <p>Quebec Med-P Program Waiting Listing Tracking System</p>
     <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; font-family: Arial;">
-    <thead style="background-color: #f2f2f2;"><tr><th>Title</th><th>Date</th><th>Matched Content</th></tr></thead>
+    <thead style="background-color: #f2f2f2;"><tr><th>Title</th><th>Date</th><th>Offer Position</th></tr></thead>
     <tbody>
     """
     for item in results:
