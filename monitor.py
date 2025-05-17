@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
+import json
 
 # Load .env file
 load_dotenv()
@@ -19,11 +20,14 @@ SMTP_SERVER = os.getenv("SMTP_SERVER", "relais.videotron.ca")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "25"))
 USE_AUTH = os.getenv("USE_AUTH", "False").lower() == "true"
 
-# Recipient groups
-EMAIL_GROUPS = {
-    "admins": ["admin1@example.com", "admin2@example.com"],
-    "students": ["student1@example.com"]
-}
+# Load recipient groups from external file
+RECIPIENTS_FILE = ".recipients"
+if os.path.exists(RECIPIENTS_FILE):
+    with open(RECIPIENTS_FILE, "r") as f:
+        EMAIL_GROUPS = json.load(f)
+else:
+    EMAIL_GROUPS = {}
+    logging.warning(".recipients file not found. No recipient groups loaded.")
 
 # Targets to monitor
 TARGETS = {
@@ -150,11 +154,12 @@ def run_monitor():
                 )
 
     for group, results in grouped_results.items():
-        send_email_html(
-            subject=f"Monitoring Report – {group}",
-            results=results,
-            recipients=EMAIL_GROUPS[group]
-        )
+        if group in EMAIL_GROUPS:
+            send_email_html(
+                subject=f"Monitoring Report – {group}",
+                results=results,
+                recipients=EMAIL_GROUPS[group]
+            )
 
 if __name__ == "__main__":
     run_monitor()
