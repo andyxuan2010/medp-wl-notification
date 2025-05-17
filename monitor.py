@@ -50,7 +50,7 @@ TARGETS = {
     },
     "mcgill_waitlist_html": {
         "url": "https://www.mcgill.ca/medadmissions/after-youve-applied/waitlist-post-interview",
-        "keyword": "Med-p",
+        "keyword": "Med-P",
         "description": "McGill Med-P Waitlist Progress",
         "format": "html_table_row",
         "email_group": "students"
