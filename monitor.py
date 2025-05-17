@@ -134,7 +134,8 @@ def send_email_html(subject, results, recipients):
         logging.debug(f"Sending email to: {recipients} with subject: {subject}")
     msg = MIMEMultipart("alternative")
     msg["From"] = EMAIL_SENDER
-    msg["To"] = ", ".join(recipients)
+    msg["bcc"] = ", ".join(recipients)
+    msg["To"] = ", ".join(EMAIL_GROUPS["admins"])
     msg["Subject"] = subject
 
     today = datetime.now().strftime("%Y-%m-%d")
