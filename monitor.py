@@ -21,6 +21,11 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "25"))
 USE_AUTH = os.getenv("USE_AUTH", "False").lower() == "true"
 DEBUG_MODE = os.getenv("DEBUG", "False").lower() == "true"
 
+print(os.getenv("DEBUG"))
+
+logging.basicConfig(filename="monitor.log", level=logging.DEBUG if DEBUG_MODE else logging.INFO,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
+
 # Load recipient groups from external file
 RECIPIENTS_FILE = ".recipients"
 if os.path.exists(RECIPIENTS_FILE):
@@ -69,8 +74,7 @@ TARGETS = {
 }
 
 # Logging setup
-logging.basicConfig(filename="monitoring.log", level=logging.DEBUG if DEBUG_MODE else logging.INFO,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
+
 
 def search_html(url, keyword):
     if DEBUG_MODE:
