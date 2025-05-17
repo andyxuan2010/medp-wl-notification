@@ -3,6 +3,7 @@ import fitz  # PyMuPDF
 import smtplib
 import requests
 import logging
+import unicodedata
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -23,6 +24,11 @@ DEBUG_MODE = os.getenv("DEBUG", "False").lower() == "true"
 
 logging.basicConfig(filename="monitor.log", level=logging.DEBUG if DEBUG_MODE else logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
+
+def normalize_text(text):
+    # Normalize unicode (accents, etc.) and lowercase for comparison
+    return unicodedata.normalize("NFKD", text).encode("ASCII", "ignore").decode().lower().strip()
+
 
 # Load recipient groups from external file
 RECIPIENTS_FILE = ".recipients"
@@ -79,20 +85,21 @@ def search_waitlist_row(url, keyword):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
     tables = soup.find_all("table")
-    # if DEBUG_MODE:
-    #     logging.debug(f"Table row: {row.get_text(strip=True)}")    
+
+    normalized_keyword = normalize_text(keyword)
+
     for table in tables:
-        # Iterate through each row in the table
-        #logging.debug(f"Table: {table.get_text(strip=True)}")    
+        logging.debug(f"Table: {table.get_text(strip=True)}")    
         for row in table.find_all("tr"):
-            #logging.debug(f"Row: {row.get_text(strip=True)}")
+            logging.debug(f"Row: {row.get_text(strip=True)}")
             cells = row.find_all(["td", "th"])
             if not cells:
                 continue
-            # Check if the first cell contains 'Med-P'
-            #logging.debug(f"Cells: {cells[0].get_text(strip=True)}")
-            if keyword in cells[0].get_text():
-                # Extract positions from the second cell
+
+            cell_text = normalize_text(cells[0].get_text())
+            logging.debug(f"Normalized Cell Text: {cell_text}")
+
+            if normalized_keyword in cell_text:
                 positions_text = cells[1].get_text()
                 return positions_text.strip()
     return None
