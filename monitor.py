@@ -26,9 +26,13 @@ RECIPIENTS_FILE = ".recipients"
 if os.path.exists(RECIPIENTS_FILE):
     with open(RECIPIENTS_FILE, "r") as f:
         EMAIL_GROUPS = json.load(f)
+    if DEBUG_MODE:
+        logging.debug(f"Loaded recipient groups from {RECIPIENTS_FILE}: {EMAIL_GROUPS}")
 else:
     EMAIL_GROUPS = {}
     logging.warning(".recipients file not found. No recipient groups loaded.")
+    if DEBUG_MODE:
+        logging.debug("EMAIL_GROUPS set to empty dictionary.")
 
 # Targets to monitor
 TARGETS = {
