@@ -91,7 +91,7 @@ def search_waitlist_row(url, keyword):
                 continue
             # Check if the first cell contains 'Med-P'
             logging.debug(f"Cells: {cells[0].get_text(strip=True)}")
-            if {keyword} in cells[0].get_text():
+            if keyword in cells[0].get_text():
                 # Extract positions from the second cell
                 positions_text = cells[1].get_text()
                 return positions_text.strip()
