@@ -83,11 +83,14 @@ def search_waitlist_row(url, keyword):
     #     logging.debug(f"Table row: {row.get_text(strip=True)}")    
     for table in tables:
         # Iterate through each row in the table
+        logging.debug(f"Table: {table.get_text(strip=True)}")    
         for row in table.find_all("tr"):
+            logging.debug(f"Row: {row.get_text(strip=True)}")
             cells = row.find_all(["td", "th"])
             if not cells:
                 continue
             # Check if the first cell contains 'Med-P'
+            logging.debug(f"Cells: {cells[0].get_text(strip=True)}")
             if {keyword} in cells[0].get_text():
                 # Extract positions from the second cell
                 positions_text = cells[1].get_text()
@@ -185,6 +188,7 @@ def run_monitor():
                 result = search_waitlist_row(url, keyword)
 
             if result:
+                logging.debug(f"there is a result: {result}")
                 grouped_results.setdefault(group, []).append({
                     "description": description,
                     "url": url,
