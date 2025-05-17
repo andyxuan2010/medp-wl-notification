@@ -50,7 +50,7 @@ TARGETS = {
     },
     "mcgill_waitlist_html": {
         "url": "https://www.mcgill.ca/medadmissions/after-youve-applied/waitlist-post-interview",
-        "keyword": "med-p",
+        "keyword": "Med-p",
         "description": "McGill Med-P Waitlist Progress",
         "format": "html_table_row",
         "email_group": "students"
@@ -59,7 +59,7 @@ TARGETS = {
         "url": "https://www.usherbrooke.ca/etudes-medecine/programmes-detudes/doctorat-en-medecine/admission/suivi-des-admissions",
         "keyword": "Contingent québécois, catégorie collégiale",
         "description": "Sherbrooke Med Admission Progress",
-        "format": "html",
+        "format": "html_table_row",
         "email_group": "students"
     }
 }
@@ -73,9 +73,9 @@ def search_html(url, keyword):
     response = requests.get(url)
     return f"Keyword found in HTML: '{keyword}'" if keyword in response.text else None
 
-def search_mcgill_waitlist_row(url, keyword):
+def search_waitlist_row(url, keyword):
     if DEBUG_MODE:
-        logging.debug(f"Parsing McGill HTML table at {url} for keyword '{keyword}'")
+        logging.debug(f"Parsing HTML table at {url} for keyword '{keyword}'")
     response = requests.get(url)
     if DEBUG_MODE:
         logging.debug(f"response: {response}")    
@@ -90,7 +90,7 @@ def search_mcgill_waitlist_row(url, keyword):
             if not cells:
                 continue
             # Check if the first cell contains 'Med-P'
-            if 'Med-P' in cells[0].get_text():
+            if {keyword} in cells[0].get_text():
                 # Extract positions from the second cell
                 positions_text = cells[1].get_text()
                 return positions_text.strip()
@@ -172,7 +172,7 @@ def run_monitor():
             keyword3 = config.get("keyword3")
             description = config["description"]
             fmt = config["format"]
-            group = config.get("email_group", "admins")
+            group = config.get("email_group", "students")
 
             if DEBUG_MODE:
                 logging.debug(f"Checking target: {description} ({fmt})")
@@ -183,7 +183,7 @@ def run_monitor():
             elif fmt == "html":
                 result = search_html(url, keyword)
             elif fmt == "html_table_row":
-                result = search_mcgill_waitlist_row(url, keyword)
+                result = search_waitlist_row(url, keyword)
 
             if result:
                 grouped_results.setdefault(group, []).append({
