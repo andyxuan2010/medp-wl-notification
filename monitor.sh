@@ -2,7 +2,7 @@
 
 # === Configuration ===
 REPO_URL="https://github.com/andyxuan2010/medp-wl-notification.git"
-WORK_DIR="$HOME/shared/scripts/medp-wl-notification"
+WORK_DIR="$HOME/shared/scripts/"
 PYTHON_BIN=$(which python3)
 CRON_TIME="0 8 * * *"
 
