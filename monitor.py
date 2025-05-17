@@ -77,15 +77,23 @@ def search_mcgill_waitlist_row(url, keyword):
     if DEBUG_MODE:
         logging.debug(f"Parsing McGill HTML table at {url} for keyword '{keyword}'")
     response = requests.get(url)
+    if DEBUG_MODE:
+        logging.debug(f"response: {response}")    
     soup = BeautifulSoup(response.text, "html.parser")
     tables = soup.find_all("table")
+    # if DEBUG_MODE:
+    #     logging.debug(f"Table row: {row.get_text(strip=True)}")    
     for table in tables:
-        if "waiting list" in table.get_text().lower():
-            for row in table.find_all("tr"):
-                if DEBUG_MODE:
-                    logging.debug(f"Table row: {row.get_text(strip=True)}")
-                if keyword.lower() in row.get_text().lower():
-                    return row.get_text(strip=True)
+        # Iterate through each row in the table
+        for row in table.find_all("tr"):
+            cells = row.find_all(["td", "th"])
+            if not cells:
+                continue
+            # Check if the first cell contains 'Med-P'
+            if 'Med-P' in cells[0].get_text():
+                # Extract positions from the second cell
+                positions_text = cells[1].get_text()
+                return positions_text.strip()
     return None
 
 def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None):
