@@ -100,7 +100,7 @@ def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None
         page_lines = [line.strip() for line in page.get_text().split("\n") if line.strip()]
         text_lines.extend(page_lines)
         if DEBUG_MODE:
-            logging.debug(f"Extracted {len(page_lines)} lines from page")
+            logging.debug(f"Extracted {len(page_lines)} lines from page {page}")
 
     # UdeM-specific smart sequential match
     step1 = [i for i, line in enumerate(text_lines) if keyword in line]
@@ -199,7 +199,7 @@ def run_monitor():
             if DEBUG_MODE:
                 logging.debug(f"Sending report email for group '{group}' with {len(results)} matched result(s).")
             send_email_html(
-                subject=f"Monitoring Report – {group}",
+                subject=f"Med-P Waiting List Update Report – {group}",
                 results=results,
                 recipients=EMAIL_GROUPS[group]
             )
