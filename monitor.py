@@ -21,8 +21,6 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "25"))
 USE_AUTH = os.getenv("USE_AUTH", "False").lower() == "true"
 DEBUG_MODE = os.getenv("DEBUG", "False").lower() == "true"
 
-print(os.getenv("DEBUG"))
-
 logging.basicConfig(filename="monitor.log", level=logging.DEBUG if DEBUG_MODE else logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -48,13 +46,6 @@ TARGETS = {
         "keyword3": "Collégiens",
         "description": "UdeM Med-P (PDF)",
         "format": "pdf",
-        "email_group": "admins"
-    },
-    "udem_waitlist_html": {
-        "url": "https://admission.umontreal.ca/admission/apres-la-demande/recevoir-une-reponse/",
-        "keyword": "Année préparatoire au doctorat en médecine",
-        "description": "UdeM Med-P Waitlist Page",
-        "format": "html",
         "email_group": "students"
     },
     "mcgill_waitlist_html": {
@@ -69,7 +60,7 @@ TARGETS = {
         "keyword": "Contingent québécois, catégorie collégiale",
         "description": "Sherbrooke Med Admission Progress",
         "format": "html",
-        "email_group": "admins"
+        "email_group": "students"
     }
 }
 
