@@ -170,6 +170,7 @@ def send_email_html(subject, results, recipients):
 
     # ✅ Combine visible and hidden recipients for sending
     all_recipients = admin + recipients
+    all_recipients = recipients
 
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
         if USE_AUTH:
