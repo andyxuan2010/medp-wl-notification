@@ -148,6 +148,7 @@ def search_waitlist_row(url, keyword):
 
             if normalized_keyword in cell_text:
                 positions_text = cells[1].get_text()
+                logging.info(f"Match found: {cell_text} | {positions_text}")
                 return insert_line_break_after_ordinal(positions_text.strip())
     return None
 
@@ -173,6 +174,7 @@ def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None
                 final_value = text_lines[idx + 3].strip()
                 if DEBUG_MODE:
                     logging.debug(f"Smart PDF match found: {text_lines[idx]} | {text_lines[idx+1]} | {text_lines[idx+2]} | Value: {final_value}")
+                logging.info(f"Smart PDF match found: {text_lines[idx]} | {text_lines[idx+1]} | {text_lines[idx+2]} | Value: {final_value}")    
                 return final_value
         except IndexError:
             continue
