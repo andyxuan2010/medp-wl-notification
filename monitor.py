@@ -23,6 +23,7 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "25"))
 USE_AUTH = os.getenv("USE_AUTH", "False").lower() == "true"
 DEBUG_MODE = os.getenv("DEBUG", "False").lower() == "true"
 FORCE_MODE = os.getenv("FORCE", "False").lower() == "true"
+SMS_RECIPIENTS = os.getenv("SMS_RECIPIENTS", "").split(",") 
 
 logging.basicConfig(filename="monitor.log", level=logging.DEBUG if DEBUG_MODE else logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
@@ -59,6 +60,20 @@ def has_changed(snapshot_key, new_data):
         return True
     return False
 
+
+# def send_sms_notification(message, sms_recipients):
+#     for sms_email in sms_recipients:
+#         sms_msg = MIMEText(message)
+#         sms_msg["From"] = EMAIL_SENDER
+#         sms_msg["To"] = sms_email
+#         sms_msg["Subject"] = ""  # SMS ignores subject
+
+#         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+#             if USE_AUTH:
+#                 server.starttls()
+#                 server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+#             server.sendmail(EMAIL_SENDER, [sms_email], sms_msg.as_string())
+
 # Load recipient groups from external file
 RECIPIENTS_FILE = ".recipients"
 if os.path.exists(RECIPIENTS_FILE):
@@ -81,21 +96,24 @@ TARGETS = {
         "keyword3": "Collégiens",
         "description": "UdeM Med-P (PDF)",
         "format": "pdf",
-        "email_group": "students"
+        "email_group": "students",
+        "sms_group": "sms"
     },
     "mcgill_waitlist_html": {
         "url": "https://www.mcgill.ca/medadmissions/after-youve-applied/waitlist-post-interview",
         "keyword": "Med-P",
         "description": "McGill Med-P Waitlist Progress",
         "format": "html_table_row",
-        "email_group": "students"
+        "email_group": "students",
+        "sms_group": "sms"        
     },
     "usherbrooke_progress_html": {
         "url": "https://www.usherbrooke.ca/etudes-medecine/programmes-detudes/doctorat-en-medecine/admission/suivi-des-admissions",
         "keyword": "Contingent québécois, catégorie collégiale",
         "description": "Sherbrooke Med Admission Progress",
         "format": "html_table_row",
-        "email_group": "students"
+        "email_group": "students",
+        "sms_group": "sms"        
     }
 }
 
@@ -168,17 +186,16 @@ def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None
 
     return None
 
-def send_email_html(subject, results, recipients):
+def send_email_html(subject, results, email_recipients, sms_recipients):
     admin = EMAIL_GROUPS["admins"]
+    #sms_recipients = EMAIL_GROUPS.get("sms", [])
     if DEBUG_MODE:
-        logging.debug(f"Sending email to admins: {admin} with BCC to students: {recipients}")
+        logging.debug(f"Sending email to admins: {admin} with BCC to recipients: {email_recipients}")
+        logging.debug(f"Also sending SMS notification to: {sms_recipients}")
 
     msg = MIMEMultipart("alternative")
     msg["From"] = EMAIL_SENDER
-    #msg["To"] = ", ".join(admin)         # Visible recipients
-    #msg["To"] = ", ".join(recipients)         # Visible recipients
     msg["To"] = EMAIL_SENDER 
-    #msg["Bcc"] = ", ".join(recipients)
     msg["Subject"] = subject
 
     today = datetime.now().strftime("%Y-%m-%d")
@@ -195,24 +212,31 @@ def send_email_html(subject, results, recipients):
 
     msg.attach(MIMEText(html, "html"))
 
-    # ✅ Combine visible and hidden recipients for sending
-    all_recipients = admin + recipients
-    all_recipients = recipients
-
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
         if USE_AUTH:
             server.starttls()
             server.login(EMAIL_SENDER, EMAIL_PASSWORD)
         
-        server.sendmail(EMAIL_SENDER, all_recipients, msg.as_string())
+        server.sendmail(EMAIL_SENDER, email_recipients, msg.as_string())
 
-    logging.info(f"Subject: {subject} | Sending to: {recipients}")
+    logging.info(f"Subject: {subject} | Sending to: {email_recipients}")
+
+    # 🔔 Send SMS notifications as plain text
+    sms_message = f"Update sent: {subject}"
+    for sms_email in sms_recipients:
+        sms_msg = MIMEText(sms_message)
+        sms_msg["From"] = EMAIL_SENDER
+        sms_msg["To"] = sms_email
+        sms_msg["Subject"] = ""
+        server.sendmail(EMAIL_SENDER, [sms_email], sms_msg.as_string())
 
 
 def run_monitor():
     if DEBUG_MODE:
         logging.debug("Starting monitor run...")
     grouped_results = {}
+    group_sms_mapping = {}
+
 
     for key, config in TARGETS.items():
         try:
@@ -222,7 +246,9 @@ def run_monitor():
             keyword3 = config.get("keyword3")
             description = config["description"]
             fmt = config["format"]
-            group = config.get("email_group", "students")
+            email_group = config.get("email_group", "students")
+            sms_group = config.get("sms_group","sms")            
+            
 
             if DEBUG_MODE:
                 logging.debug(f"Checking target: {description} ({fmt})")
@@ -235,14 +261,6 @@ def run_monitor():
             elif fmt == "html_table_row":
                 result = search_waitlist_row(url, keyword)
 
-            # if result:
-            #     #logging.debug(f"there is a result: {result}")
-            #     grouped_results.setdefault(group, []).append({
-            #         "description": description,
-            #         "url": url,
-            #         "matched": result
-            #     })
-            #     logging.info(f"Match found in {description}: {result}")
             if result:
                 snapshot_key = key
                 snapshot_data = {
@@ -251,15 +269,10 @@ def run_monitor():
                     "matched": result
                 }
 
-                if has_changed(snapshot_key, snapshot_data):
-                    grouped_results.setdefault(group, []).append(snapshot_data)
-                    logging.info(f"Change detected in {description}: {result}")
-                else:
-                    if FORCE_MODE:
-                        grouped_results.setdefault(group, []).append(snapshot_data)
-                        logging.info(f"Change NOT detected but forced in action")
-                    else:
-                        logging.info(f"No change in {description}. Skipping email.")
+                if has_changed(snapshot_key, snapshot_data) or FORCE_MODE:
+                    grouped_results.setdefault(email_group, []).append(snapshot_data)
+                    if sms_group:
+                        group_sms_mapping[email_group] = EMAIL_GROUPS.get(sms_group, [])
 
         except Exception as e:
             logging.error(f"Error processing {config['description']}: {e}")
@@ -267,25 +280,24 @@ def run_monitor():
                 send_email_html(
                     subject=f"Error in {description}",
                     results=[{"description": description, "url": url, "matched": f"ERROR: {e}"}],
-                    recipients=EMAIL_GROUPS["admins"]
+                    email_recipients=EMAIL_GROUPS["admins"],
+                    sms_recipients=[]
                 )
 
     for group, results in grouped_results.items():
         if group in EMAIL_GROUPS:
-            if DEBUG_MODE:
-                logging.debug(f"Sending report email for group '{group}' with {len(results)} matched result(s).")
+            sms_recipients = group_sms_mapping.get(group, [])
             send_email_html(
                 subject=f"Med-P Waiting List Update Report – {group}",
                 results=results,
-                recipients=EMAIL_GROUPS[group]
+                email_recipients=EMAIL_GROUPS[group],
+                sms_recipients=sms_recipients
             )
         else:
-            if DEBUG_MODE:
-                logging.debug(f"Group '{group}' not found in EMAIL_GROUPS, skipping email.")
+            logging.warning(f"Group '{group}' not found in EMAIL_GROUPS, skipping email.")
 
 if __name__ == "__main__":
     run_monitor()
-
 
 
 
