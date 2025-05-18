@@ -176,7 +176,8 @@ def send_email_html(subject, results, recipients):
     msg = MIMEMultipart("alternative")
     msg["From"] = EMAIL_SENDER
     #msg["To"] = ", ".join(admin)         # Visible recipients
-    msg["To"] = ", ".join(recipients)         # Visible recipients
+    #msg["To"] = ", ".join(recipients)         # Visible recipients
+    msg["To"] = EMAIL_SENDER 
     #msg["Bcc"] = ", ".join(recipients)
     msg["Subject"] = subject
 
