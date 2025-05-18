@@ -219,16 +219,16 @@ def send_email_html(subject, results, email_recipients, sms_recipients):
         
         server.sendmail(EMAIL_SENDER, email_recipients, msg.as_string())
 
-    logging.info(f"Subject: {subject} | Sending to: {email_recipients}")
+        logging.info(f"Subject: {subject} | Sending to: {email_recipients}")
 
-    # 🔔 Send SMS notifications as plain text
-    sms_message = f"Update sent: {subject}"
-    for sms_email in sms_recipients:
-        sms_msg = MIMEText(sms_message)
-        sms_msg["From"] = EMAIL_SENDER
-        sms_msg["To"] = sms_email
-        sms_msg["Subject"] = ""
-        server.sendmail(EMAIL_SENDER, [sms_email], sms_msg.as_string())
+        # 🔔 Send SMS notifications as plain text
+        sms_message = f"Update sent: {subject}"
+        for sms_email in sms_recipients:
+            sms_msg = MIMEText(sms_message)f
+            sms_msg["From"] = EMAIL_SENDER
+            sms_msg["To"] = sms_email
+            sms_msg["Subject"] = ""
+            server.sendmail(EMAIL_SENDER, [sms_email], sms_msg.as_string())
 
 
 def run_monitor():
