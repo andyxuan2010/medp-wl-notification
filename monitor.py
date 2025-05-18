@@ -4,6 +4,7 @@ import smtplib
 import requests
 import logging
 import unicodedata
+import re
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -29,6 +30,9 @@ def normalize_text(text):
     # Normalize unicode (accents, etc.) and lowercase for comparison
     return unicodedata.normalize("NFKD", text).encode("ASCII", "ignore").decode().lower().strip()
 
+def insert_line_break_after_ordinal(text):
+    # Match digits followed by an 'e' (regular or superscript-like), then insert a newline
+    return re.sub(r'(\d+[eᵉ])', r'\1\n', text).strip()
 
 # Load recipient groups from external file
 RECIPIENTS_FILE = ".recipients"
@@ -63,7 +67,7 @@ TARGETS = {
     },
     "usherbrooke_progress_html": {
         "url": "https://www.usherbrooke.ca/etudes-medecine/programmes-detudes/doctorat-en-medecine/admission/suivi-des-admissions",
-        "keyword": "Contingent québécois, catégorie&nbsp;collégiale",
+        "keyword": "Contingent québécois, catégorie collégiale",
         "description": "Sherbrooke Med Admission Progress",
         "format": "html_table_row",
         "email_group": "students"
@@ -101,7 +105,7 @@ def search_waitlist_row(url, keyword):
 
             if normalized_keyword in cell_text:
                 positions_text = cells[1].get_text()
-                return positions_text.strip()
+                return insert_line_break_after_ordinal(positions_text.strip())
     return None
 
 def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None):
