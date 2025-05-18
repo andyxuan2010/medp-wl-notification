@@ -144,8 +144,9 @@ def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None
     return None
 
 def send_email_html(subject, results, recipients):
+    admin = EMAIL_GROUPS["admins"]
     if DEBUG_MODE:
-        logging.debug(f"Sending email to admins: {EMAIL_GROUPS["admins"]} with BCC to students: {recipients}")
+        logging.debug(f"Sending email to admins: {admin} with BCC to students: {recipients}")
 
     msg = MIMEMultipart("alternative")
     msg["From"] = EMAIL_SENDER
