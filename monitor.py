@@ -151,7 +151,7 @@ def send_email_html(subject, results, recipients):
     msg = MIMEMultipart("alternative")
     msg["From"] = EMAIL_SENDER
     msg["To"] = ", ".join(admin)         # Visible recipients
-    msg["Bcc"] = ", ".join(recipients)
+    #msg["Bcc"] = ", ".join(recipients)
     msg["Subject"] = subject
 
     today = datetime.now().strftime("%Y-%m-%d")
