@@ -150,7 +150,8 @@ def send_email_html(subject, results, recipients):
 
     msg = MIMEMultipart("alternative")
     msg["From"] = EMAIL_SENDER
-    msg["To"] = ", ".join(EMAIL_GROUPS["admins"])         # Visible recipients
+    msg["To"] = ", ".join(admin)         # Visible recipients
+    msg["Bcc"] = ", ".join(recipients)
     msg["Subject"] = subject
 
     today = datetime.now().strftime("%Y-%m-%d")
@@ -168,7 +169,7 @@ def send_email_html(subject, results, recipients):
     msg.attach(MIMEText(html, "html"))
 
     # ✅ Combine visible and hidden recipients for sending
-    all_recipients = EMAIL_GROUPS["admins"] + recipients
+    all_recipients = admin + recipients
 
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
         if USE_AUTH:
@@ -177,7 +178,7 @@ def send_email_html(subject, results, recipients):
         
         server.sendmail(EMAIL_SENDER, all_recipients, msg.as_string())
 
-
+    logging.info(f"Subject: {subject} | Sending to: {admin} | BCC: {recipients}")
 
 
 def run_monitor():
