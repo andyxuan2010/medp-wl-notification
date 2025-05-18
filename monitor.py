@@ -145,17 +145,19 @@ def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None
 
 def send_email_html(subject, results, recipients):
     if DEBUG_MODE:
-        logging.debug(f"Sending email to: {recipients} with subject: {subject}")
+        logging.debug(f"Sending email to admins: {admins} with BCC to students: {recipients}")
+
     msg = MIMEMultipart("alternative")
     msg["From"] = EMAIL_SENDER
-    msg["bcc"] = ", ".join(recipients)
-    msg["To"] = ", ".join(EMAIL_GROUPS["admins"])
+    msg["To"] = ", ".join(EMAIL_GROUPS["admins"])         # Visible recipients
     msg["Subject"] = subject
+
+
 
     today = datetime.now().strftime("%Y-%m-%d")
     html = """
     <html><body>
-    <p>Quebec Med-P Program Waiting Listing Tracking System</p>
+    <p>Quebec Med-P Program Waiting List Tracking System</p>
     <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; font-family: Arial;">
     <thead style="background-color: #f2f2f2;"><tr><th>Title</th><th>Date</th><th>Offer Position</th></tr></thead>
     <tbody>
@@ -166,11 +168,18 @@ def send_email_html(subject, results, recipients):
 
     msg.attach(MIMEText(html, "html"))
 
+    # ✅ Combine visible and hidden recipients for sending
+    all_recipients = EMAIL_GROUPS["admins"] + recipients
+
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
         if USE_AUTH:
             server.starttls()
             server.login(EMAIL_SENDER, EMAIL_PASSWORD)
-        server.sendmail(EMAIL_SENDER, recipients, msg.as_string())
+        
+        server.sendmail(EMAIL_SENDER, all_recipients, msg.as_string())
+
+
+
 
 def run_monitor():
     if DEBUG_MODE:
