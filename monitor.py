@@ -224,7 +224,7 @@ def send_email_html(subject, results, email_recipients, sms_recipients):
         # 🔔 Send SMS notifications as plain text
         sms_message = f"Update sent: {subject}"
         for sms_email in sms_recipients:
-            sms_msg = MIMEText(sms_message)f
+            sms_msg = MIMEText(sms_message)
             sms_msg["From"] = EMAIL_SENDER
             sms_msg["To"] = sms_email
             sms_msg["Subject"] = ""
