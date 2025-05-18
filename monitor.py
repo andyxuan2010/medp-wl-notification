@@ -34,6 +34,30 @@ def insert_line_break_after_ordinal(text):
     # Match digits followed by an 'e' (regular or superscript-like), then insert a newline
     return re.sub(r'(\d+[eᵉ])', r'\1\n', text).strip()
 
+
+
+SNAPSHOT_DIR = "snapshots"
+os.makedirs(SNAPSHOT_DIR, exist_ok=True)
+
+def load_previous_snapshot(snapshot_key):
+    path = os.path.join(SNAPSHOT_DIR, f"{snapshot_key}.json")
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
+def save_current_snapshot(snapshot_key, data):
+    path = os.path.join(SNAPSHOT_DIR, f"{snapshot_key}.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+def has_changed(snapshot_key, new_data):
+    old_data = load_previous_snapshot(snapshot_key)
+    if old_data != new_data:
+        save_current_snapshot(snapshot_key, new_data)
+        return True
+    return False
+
 # Load recipient groups from external file
 RECIPIENTS_FILE = ".recipients"
 if os.path.exists(RECIPIENTS_FILE):
@@ -179,7 +203,7 @@ def send_email_html(subject, results, recipients):
         
         server.sendmail(EMAIL_SENDER, all_recipients, msg.as_string())
 
-    logging.info(f"Subject: {subject} | Sending to: {admin} | BCC: {recipients}")
+    logging.info(f"Subject: {subject} | Sending to: {recipients}")
 
 
 def run_monitor():
@@ -259,24 +283,3 @@ if __name__ == "__main__":
 
 
 
-SNAPSHOT_DIR = "snapshots"
-os.makedirs(SNAPSHOT_DIR, exist_ok=True)
-
-def load_previous_snapshot(snapshot_key):
-    path = os.path.join(SNAPSHOT_DIR, f"{snapshot_key}.json")
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return None
-
-def save_current_snapshot(snapshot_key, data):
-    path = os.path.join(SNAPSHOT_DIR, f"{snapshot_key}.json")
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-
-def has_changed(snapshot_key, new_data):
-    old_data = load_previous_snapshot(snapshot_key)
-    if old_data != new_data:
-        save_current_snapshot(snapshot_key, new_data)
-        return True
-    return False
