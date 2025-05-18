@@ -208,14 +208,27 @@ def run_monitor():
             elif fmt == "html_table_row":
                 result = search_waitlist_row(url, keyword)
 
+            # if result:
+            #     #logging.debug(f"there is a result: {result}")
+            #     grouped_results.setdefault(group, []).append({
+            #         "description": description,
+            #         "url": url,
+            #         "matched": result
+            #     })
+            #     logging.info(f"Match found in {description}: {result}")
             if result:
-                #logging.debug(f"there is a result: {result}")
-                grouped_results.setdefault(group, []).append({
+                snapshot_key = key
+                snapshot_data = {
                     "description": description,
                     "url": url,
                     "matched": result
-                })
-                logging.info(f"Match found in {description}: {result}")
+                }
+
+                if has_changed(snapshot_key, snapshot_data):
+                    grouped_results.setdefault(group, []).append(snapshot_data)
+                    logging.info(f"Change detected in {description}: {result}")
+                else:
+                    logging.info(f"No change in {description}. Skipping email.")
 
         except Exception as e:
             logging.error(f"Error processing {config['description']}: {e}")
@@ -241,3 +254,29 @@ def run_monitor():
 
 if __name__ == "__main__":
     run_monitor()
+
+
+
+
+
+SNAPSHOT_DIR = "snapshots"
+os.makedirs(SNAPSHOT_DIR, exist_ok=True)
+
+def load_previous_snapshot(snapshot_key):
+    path = os.path.join(SNAPSHOT_DIR, f"{snapshot_key}.json")
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
+def save_current_snapshot(snapshot_key, data):
+    path = os.path.join(SNAPSHOT_DIR, f"{snapshot_key}.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+def has_changed(snapshot_key, new_data):
+    old_data = load_previous_snapshot(snapshot_key)
+    if old_data != new_data:
+        save_current_snapshot(snapshot_key, new_data)
+        return True
+    return False
