@@ -145,14 +145,12 @@ def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None
 
 def send_email_html(subject, results, recipients):
     if DEBUG_MODE:
-        logging.debug(f"Sending email to admins: {admins} with BCC to students: {recipients}")
+        logging.debug(f"Sending email to admins: {EMAIL_GROUPS["admins"]} with BCC to students: {recipients}")
 
     msg = MIMEMultipart("alternative")
     msg["From"] = EMAIL_SENDER
     msg["To"] = ", ".join(EMAIL_GROUPS["admins"])         # Visible recipients
     msg["Subject"] = subject
-
-
 
     today = datetime.now().strftime("%Y-%m-%d")
     html = """
