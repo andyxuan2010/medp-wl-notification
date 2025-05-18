@@ -22,6 +22,7 @@ SMTP_SERVER = os.getenv("SMTP_SERVER", "relais.videotron.ca")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "25"))
 USE_AUTH = os.getenv("USE_AUTH", "False").lower() == "true"
 DEBUG_MODE = os.getenv("DEBUG", "False").lower() == "true"
+FORCE_MODE = os.getenv("FORCE", "False").lower() == "true"
 
 logging.basicConfig(filename="monitor.log", level=logging.DEBUG if DEBUG_MODE else logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
@@ -253,7 +254,11 @@ def run_monitor():
                     grouped_results.setdefault(group, []).append(snapshot_data)
                     logging.info(f"Change detected in {description}: {result}")
                 else:
-                    logging.info(f"No change in {description}. Skipping email.")
+                    if FORCE_MODE:
+                        grouped_results.setdefault(group, []).append(snapshot_data)
+                        logging.info(f"Change NOT detected but forced in action")
+                    else:
+                        logging.info(f"No change in {description}. Skipping email.")
 
         except Exception as e:
             logging.error(f"Error processing {config['description']}: {e}")
