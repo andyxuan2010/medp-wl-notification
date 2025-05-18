@@ -208,7 +208,7 @@ def run_monitor():
                 result = search_waitlist_row(url, keyword)
 
             if result:
-                logging.debug(f"there is a result: {result}")
+                #logging.debug(f"there is a result: {result}")
                 grouped_results.setdefault(group, []).append({
                     "description": description,
                     "url": url,
