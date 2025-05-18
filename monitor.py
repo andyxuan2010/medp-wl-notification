@@ -94,7 +94,7 @@ TARGETS = {
         "keyword": "1-450-4-0",
         "keyword2": "Année préparatoire au doctorat en médecine",
         "keyword3": "Collégiens",
-        "description": "UdeM Med-P (PDF)",
+        "description": "UdeM Med-P WL Status",
         "format": "pdf",
         "email_group": "students",
         "sms_group": "sms"
@@ -102,7 +102,7 @@ TARGETS = {
     "mcgill_waitlist_html": {
         "url": "https://www.mcgill.ca/medadmissions/after-youve-applied/waitlist-post-interview",
         "keyword": "Med-P",
-        "description": "McGill Med-P Waitlist Progress",
+        "description": "McGill Med-P WL Status",
         "format": "html_table_row",
         "email_group": "students",
         "sms_group": "sms"        
@@ -110,7 +110,7 @@ TARGETS = {
     "usherbrooke_progress_html": {
         "url": "https://www.usherbrooke.ca/etudes-medecine/programmes-detudes/doctorat-en-medecine/admission/suivi-des-admissions",
         "keyword": "Contingent québécois, catégorie collégiale",
-        "description": "Sherbrooke Med Admission Progress",
+        "description": "UdeS Med-P WL Status",
         "format": "html_table_row",
         "email_group": "students",
         "sms_group": "sms"        
