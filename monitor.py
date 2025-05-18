@@ -212,6 +212,12 @@ def send_email_html(subject, results, email_recipients, sms_recipients):
 
     msg.attach(MIMEText(html, "html"))
 
+    sms_lines = ["Med-P Update:"]
+    for item in results:
+        sms_lines.append(f"• {item['description']}: {item['matched']}")
+    sms_message = "\n".join(sms_lines)
+
+
     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
         if USE_AUTH:
             server.starttls()
@@ -222,7 +228,6 @@ def send_email_html(subject, results, email_recipients, sms_recipients):
         logging.info(f"Subject: {subject} | Sending to: {email_recipients}")
 
         # 🔔 Send SMS notifications as plain text
-        sms_message = f"Update sent: {subject}"
         for sms_email in sms_recipients:
             sms_msg = MIMEText(sms_message)
             sms_msg["From"] = EMAIL_SENDER
