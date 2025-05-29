@@ -91,16 +91,26 @@ else:
 
 # Targets to monitor
 TARGETS = {
-    "udem_medp_pdf": {
+    "udem_medp_montreal": {
         "url": "https://admission.umontreal.ca/fileadmin/fichiers/documents/liste_attente/LA.pdf",
         "keyword": "1-450-4-0",
         "keyword2": "Médecine (Année préparatoire au doctorat) - Campus Montréal",
         "keyword3": "Collégiens",
-        "description": "UdeM Med-P WL",
+        "description": "UdeM Med-P Montreal WL",
         "format": "pdf",
         "email_group": "students",
         "sms_group": "sms"
     },
+    "udem_medp_mauricie": {
+        "url": "https://admission.umontreal.ca/fileadmin/fichiers/documents/liste_attente/LA.pdf",
+        "keyword": "1-450-4-0",
+        "keyword2": "Médecine (Année préparatoire au doctorat) - Campus Mauricie",
+        "keyword3": "Collégiens",
+        "description": "UdeM Med-P Mauricie WL",
+        "format": "pdf",
+        "email_group": "students",
+        "sms_group": "sms"
+    },    
     "mcgill_waitlist_html": {
         "url": "https://www.mcgill.ca/medadmissions/after-youve-applied/waitlist-post-interview",
         "keyword": "Med-P",
