@@ -4,14 +4,14 @@
 REPO_URL="https://github.com/andyxuan2010/medp-wl-notification.git"
 WORK_DIR="$HOME/shared/scripts/medp-wl-notification"
 PYTHON_BIN=$(which python3)
-CRON_TIME="0 8 * * *"
+CRON_TIME="*/10 * * * *"
 
 echo "📦 Creating working directory: $WORK_DIR"
 mkdir -p "$WORK_DIR"
 cd "$WORK_DIR" || exit 1
 
 echo "⬇️ Cloning GitHub repository..."
-if [ -d ".github" ]; then
+if [ -d ".git" ]; then
     echo "✅ Repository already exists. Running git pull to update."
     git pull
 else
@@ -41,6 +41,7 @@ EMAIL_PASSWORD=
 SMTP_SERVER=relais.videotron.ca
 SMTP_PORT=25
 USE_AUTH=False
+DEFAULT_RECIPIENTS_FILE=.recipients
 EOF
   echo "✅ .env file created. You can edit it manually to change settings."
 else
