@@ -182,6 +182,10 @@ def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None
     step1 = [i for i, line in enumerate(text_lines) if keyword in line]
     for idx in step1:
         try:
+            if DEBUG_MODE:
+                logging.debug(text_lines[idx + 1])        
+                logging.debug(text_lines[idx + 2])        
+                logging.debug(text_lines[idx + 3])        
             if keyword2 in text_lines[idx + 1] and keyword3 in text_lines[idx + 2]:
                 final_value = text_lines[idx + 3].strip()
                 if DEBUG_MODE:
