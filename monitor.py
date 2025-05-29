@@ -176,9 +176,12 @@ def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None
         page_lines = [line.strip() for line in page.get_text().split("\n") if line.strip()]
         text_lines.extend(page_lines)
         if DEBUG_MODE:
+            logging.debug(f{text_lines})
             logging.debug(f"Extracted {len(page_lines)} lines from page {page}")
 
     # UdeM-specific smart sequential match
+    if DEBUG_MODE:
+        logging.debug(f"Searching for keyword '{keyword}' in PDF text lines {text_lines}")
     step1 = [i for i, line in enumerate(text_lines) if keyword in line]
     for idx in step1:
         try:
