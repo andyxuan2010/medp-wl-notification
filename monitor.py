@@ -24,6 +24,7 @@ USE_AUTH = os.getenv("USE_AUTH", "False").lower() == "true"
 DEBUG_MODE = os.getenv("DEBUG", "False").lower() == "true"
 FORCE_MODE = os.getenv("FORCE", "False").lower() == "true"
 SMS_RECIPIENTS = os.getenv("SMS_RECIPIENTS", "").split(",") 
+DEFAULT_RECIPIENTS_FILE = os.getenv("DEFAULT_RECIPIENTS_FILE")
 
 logging.basicConfig(filename="monitor.log", level=logging.DEBUG if DEBUG_MODE else logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
@@ -75,7 +76,8 @@ def has_changed(snapshot_key, new_data):
 #             server.sendmail(EMAIL_SENDER, [sms_email], sms_msg.as_string())
 
 # Load recipient groups from external file
-RECIPIENTS_FILE = ".recipients"
+RECIPIENTS_FILE = DEFAULT_RECIPIENTS_FILE
+
 if os.path.exists(RECIPIENTS_FILE):
     with open(RECIPIENTS_FILE, "r") as f:
         EMAIL_GROUPS = json.load(f)
@@ -92,7 +94,7 @@ TARGETS = {
     "udem_medp_pdf": {
         "url": "https://admission.umontreal.ca/fileadmin/fichiers/documents/liste_attente/LA.pdf",
         "keyword": "1-450-4-0",
-        "keyword2": "Année préparatoire au doctorat en médecine",
+        "keyword2": "Médecine (Année préparatoire au doctorat) - Campus Montréal",
         "keyword3": "Collégiens",
         "description": "UdeM Med-P WL",
         "format": "pdf",
