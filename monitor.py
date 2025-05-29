@@ -176,7 +176,7 @@ def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None
         page_lines = [line.strip() for line in page.get_text().split("\n") if line.strip()]
         text_lines.extend(page_lines)
         if DEBUG_MODE:
-            logging.debug(f{text_lines})
+            logging.debug({text_lines})
             logging.debug(f"Extracted {len(page_lines)} lines from page {page}")
 
     # UdeM-specific smart sequential match
