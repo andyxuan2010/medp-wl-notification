@@ -52,10 +52,10 @@ echo "🚀 Running monitor.py once for testing..."
 python monitor.py
 
 echo "⏰ Adding cron job (if not already added)..."
-CRON_JOB="$CRON_TIME cd $WORK_DIR && source venv/bin/activate && python monitor.py >> monitor_cron.log 2>&1"
+CRON_JOB="$CRON_TIME cd $WORK_DIR && chmod +x monitor.sh && /bin/bash monitor.sh >> monitor_cron.log 2>&1"
 
 # Check if cron job already exists
-(crontab -l 2>/dev/null | grep -F "monitor.py") >/dev/null
+(crontab -l 2>/dev/null | grep -F "monitor.sh") >/dev/null
 if [ $? -ne 0 ]; then
     (crontab -l 2>/dev/null; echo "$CRON_JOB") | crontab -
     echo "✅ Cron job added: $CRON_JOB"
