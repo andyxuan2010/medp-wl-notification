@@ -24,7 +24,7 @@ USE_AUTH = os.getenv("USE_AUTH", "False").lower() == "true"
 DEBUG_MODE = os.getenv("DEBUG", "False").lower() == "true"
 FORCE_MODE = os.getenv("FORCE", "False").lower() == "true"
 SMS_RECIPIENTS = os.getenv("SMS_RECIPIENTS", "").split(",") 
-DEFAULT_RECIPIENTS_FILE = os.getenv("DEFAULT_RECIPIENTS_FILE")
+DEFAULT_RECIPIENTS_FILE = os.getenv("DEFAULT_RECIPIENTS_FILE",".recipient.test")
 
 logging.basicConfig(filename="monitor.log", level=logging.DEBUG if DEBUG_MODE else logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
@@ -103,7 +103,7 @@ TARGETS = {
     },
     "udem_medp_mauricie": {
         "url": "https://admission.umontreal.ca/fileadmin/fichiers/documents/liste_attente/LA.pdf",
-        "keyword": "1-450-4-0",
+        "keyword": "1-450-4-9",
         "keyword2": "Médecine (Année préparatoire au doctorat) - Campus Mauricie",
         "keyword3": "Collégiens",
         "description": "UdeM Med-P Mauricie WL",
@@ -186,18 +186,20 @@ def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None
     for idx in step1:
         try:
             if DEBUG_MODE:
-                logging.debug(keyword)        
-                logging.debug(text_lines[idx + 1])
-                logging.debug(keyword2)
-                logging.debug(text_lines[idx + 2])        
-                logging.debug(keyword3)
-                logging.debug(text_lines[idx + 3])        
+                # logging.debug(text_lines[idx + 1])
+                # logging.debug(text_lines[idx + 2])        
+                # logging.debug(text_lines[idx + 3])
+                logging.debug(f"keyword={keyword}, keyword2={keyword2}, keyword3={keyword3}")   
             if keyword2 in text_lines[idx + 1] and keyword3 in text_lines[idx + 2]:
                 final_value = text_lines[idx + 3].strip()
                 if DEBUG_MODE:
                     logging.debug(f"Smart PDF match found: {text_lines[idx]} | {text_lines[idx+1]} | {text_lines[idx+2]} | Value: {final_value}")
                 logging.info(f"Smart PDF match found: {text_lines[idx]} | {text_lines[idx+1]} | {text_lines[idx+2]} | Value: {final_value}")    
                 return final_value
+            else:
+                if DEBUG_MODE:
+                    logging.debug(f"Smart PDF match failed for index {idx}: {text_lines[idx + 1]} does not match {keyword2} or {text_lines[idx + 2]} does not match {keyword3}")
+                
         except IndexError:
             continue
 
@@ -285,7 +287,7 @@ def run_monitor():
             result = None
             if fmt == "pdf":
                 if DEBUG_MODE:
-                    logging.debug(keyword, keyword2, keyword3)
+                    logging.debug(f"keywords={keyword}, {keyword2}, {keyword3}")
                 result = download_pdf_and_search(url, keyword, f"{key}.pdf", keyword2, keyword3)
             elif fmt == "html":
                 result = search_html(url, keyword)
