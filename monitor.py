@@ -176,7 +176,7 @@ def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None
         page_lines = [line.strip() for line in page.get_text().split("\n") if line.strip()]
         text_lines.extend(page_lines)
         if DEBUG_MODE:
-            logging.debug({text_lines})
+            # logging.debug({text_lines})
             logging.debug(f"Extracted {len(page_lines)} lines from page {page}")
 
     # UdeM-specific smart sequential match
@@ -186,8 +186,11 @@ def download_pdf_and_search(url, keyword, filename, keyword2=None, keyword3=None
     for idx in step1:
         try:
             if DEBUG_MODE:
-                logging.debug(text_lines[idx + 1])        
+                logging.debug(keyword)        
+                logging.debug(text_lines[idx + 1])
+                logging.debug(keyword2)
                 logging.debug(text_lines[idx + 2])        
+                logging.debug(keyword3)
                 logging.debug(text_lines[idx + 3])        
             if keyword2 in text_lines[idx + 1] and keyword3 in text_lines[idx + 2]:
                 final_value = text_lines[idx + 3].strip()
@@ -281,6 +284,8 @@ def run_monitor():
 
             result = None
             if fmt == "pdf":
+                if DEBUG_MODE:
+                    logging.debug(keyword, keyword2, keyword3)
                 result = download_pdf_and_search(url, keyword, f"{key}.pdf", keyword2, keyword3)
             elif fmt == "html":
                 result = search_html(url, keyword)
