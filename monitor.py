@@ -111,7 +111,17 @@ TARGETS = {
         "format": "pdf",
         "email_group": "students",
         "sms_group": "sms"
-    },    
+    },
+        "udem_denp_montreal": {
+        "url": "https://admission.umontreal.ca/fileadmin/fichiers/documents/liste_attente/LA.pdf",
+        "keyword": "1-300-1-0",
+        "keyword2": "Médecine dentaire (Doctorat de 1er cycle)",
+        "keyword3": "Collégiens",
+        "description": "UdeM Den-P Montreal WL",
+        "format": "pdf",
+        "email_group": "students",
+        "sms_group": "sms"
+    },  
     "mcgill_waitlist_html": {
         "url": "https://www.mcgill.ca/medadmissions/after-youve-applied/waitlist-post-interview",
         "keyword": "Med-P",
