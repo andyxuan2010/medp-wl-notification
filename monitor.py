@@ -25,6 +25,7 @@ DEBUG_MODE = os.getenv("DEBUG", "False").lower() == "true"
 FORCE_MODE = os.getenv("FORCE", "False").lower() == "true"
 SMS_RECIPIENTS = os.getenv("SMS_RECIPIENTS", "").split(",") 
 DEFAULT_RECIPIENTS_FILE = os.getenv("DEFAULT_RECIPIENTS_FILE",".recipient.test")
+ADMIN_NOTIFICATION = os.getenv("ADMIN_NOTIFICATION", "False").lower() == "true"
 
 logging.basicConfig(filename="monitor.log", level=logging.DEBUG if DEBUG_MODE else logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
@@ -309,7 +310,7 @@ def run_monitor():
 
         except Exception as e:
             logging.error(f"Error processing {config['description']}: {e}")
-            if EMAIL_GROUPS.get("admins"):
+            if EMAIL_GROUPS.get("admins") and ADMIN_NOTIFICATION:
                 send_email_html(
                     subject=f"Error in {description}",
                     results=[{"description": description, "url": url, "matched": f"ERROR: {e}"}],
