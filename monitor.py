@@ -274,6 +274,7 @@ def send_email_html(subject, results, email_recipients, sms_recipients):
 
 
 def run_monitor():
+    global connection_reset_counter    
     if DEBUG_MODE:
         logging.debug("Starting monitor run...")
     grouped_results = {}
@@ -319,6 +320,13 @@ def run_monitor():
                         group_sms_mapping[email_group] = EMAIL_GROUPS.get(sms_group, [])
 
         except Exception as e:
+            # Check for "Connection reset by peer"
+            if "Connection reset by peer" in str(e):
+                connection_reset_counter[key] = connection_reset_counter.get(key, 0) + 1
+                if connection_reset_counter[key] <= 10:
+                    logging.warning(f"Connection reset by peer for {config['description']} (count: {connection_reset_counter[key]}), skipping...")
+                    continue  # Skip reporting if <= 5 times
+            # Report if more than 5 times or for other errors     
             logging.error(f"Error processing {config['description']}: {e}")
             if EMAIL_GROUPS.get("admins") and ADMIN_NOTIFICATION:
                 send_email_html(
