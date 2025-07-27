@@ -1,6 +1,5 @@
 A simple python program can send you the notification of waiting list number in real time for the Quebec Med-P
 
-
 ### Support programs
 1. Mcgill Med-P
 2. UdeM Premed
@@ -16,8 +15,8 @@ A simple python program can send you the notification of waiting list number in 
 2. sms
 
 ### Deployment
-cronjob on linux based VM
+cronjob on linux based VMs
 Possible to extend to Windows based or cloud based. 
-
+add more
 
 
